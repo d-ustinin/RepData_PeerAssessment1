@@ -1,83 +1,87 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
-```{r setlocale, echo=FALSE, results="hide" }
-Sys.setlocale("LC_ALL","English")
-Sys.setenv(TZ='Europe/Moscow')
-```
+# Reproducible Research: Peer Assessment 1
+
 
 ## Loading and preprocessing the data
 
-```{r loading}
 
+```r
 activity_data<-read.csv('activity.csv', colClasses=c("numeric", "character", "integer"))
 summary(activity_data)
+```
 
+```
+##      steps            date              interval     
+##  Min.   :  0.00   Length:17568       Min.   :   0.0  
+##  1st Qu.:  0.00   Class :character   1st Qu.: 588.8  
+##  Median :  0.00   Mode  :character   Median :1177.5  
+##  Mean   : 37.38                      Mean   :1177.5  
+##  3rd Qu.: 12.00                      3rd Qu.:1766.2  
+##  Max.   :806.00                      Max.   :2355.0  
+##  NA's   :2304
 ```
 
 ## What is mean total number of steps taken per day?
 
 Now we calculate total number of steps  
 
-```{r totalsteps}
 
+```r
 day_steps<-tapply(activity_data$steps, activity_data$date, sum, na.rm=TRUE)
-
 ```
 
 Here is the histogram:  
-```{r steps_hist}
 
+```r
 hist(day_steps, main="Histogram of total steps per day", xlab="steps per day")
-
 ```
 
-```{r steps_mean_median}
+![](PA1_template_files/figure-html/steps_hist-1.png) 
 
+
+```r
 mean_day_steps<-mean(day_steps)
 median_day_steps<-median(day_steps)
-
 ```
 
-Mean steps per day is `r mean_day_steps`, median is `r median_day_steps`:
+Mean steps per day is 9354.2295082, median is 1.0395\times 10^{4}:
 
 ## What is the average daily activity pattern?
 
 Average number of steps per interval between days:
 
-```{r ave_steps_per_interval}
 
+```r
 ave_steps<-tapply(activity_data$steps, activity_data$interval, mean, na.rm=TRUE)
-
 ```
 
 Activity pattern:
 
-```{r activity}
 
+```r
 plot(names(ave_steps), ave_steps, type='l', main='Average number of steps in 5-min interval', xlab='interval', ylab='number of steps')
-
 ```
 
-```{r max_interval}
+![](PA1_template_files/figure-html/activity-1.png) 
+
+
+```r
 max_step_interval<-as.integer(names(which.max(ave_steps)))
 ```
-Interval `r max_step_interval` contains maximum average number of steps.
+Interval 835 contains maximum average number of steps.
 
 
 ## Inputing missing values
 
-```{r miss_val}
+
+```r
 total_na<-sum(is.na(activity_data$steps))
 ```
 
-Total number of missing values is `r total_na`.  
+Total number of missing values is 2304.  
 Now we use mean for that interval to fill missing values.
 
-```{r fill_miss_val,cache=FALSE}
+
+```r
 # create vector of average values for each interval
 ave_int<-sapply(activity_data$interval, function(x) { ave_steps[as.character(x)] })
 # create new data set
@@ -92,20 +96,24 @@ nomiss_median<-median(nomiss_day_steps)
 
 Histogram:
 
-```{r nomiss_histogram}
+
+```r
 hist(nomiss_day_steps, main="Histogram of total steps per day, missing values filled", xlab="steps per day")
 ```
 
-Mean steps per day: don't fill missing values: `r mean_day_steps`, fill missing values: `r nomiss_mean`    
+![](PA1_template_files/figure-html/nomiss_histogram-1.png) 
 
-Median steps per day: don't fill missing values: `r median_day_steps`, fill missing values: `r nomiss_median`  
+Mean steps per day: don't fill missing values: 9354.2295082, fill missing values: 1.0766189\times 10^{4}    
+
+Median steps per day: don't fill missing values: 1.0395\times 10^{4}, fill missing values: 1.0766189\times 10^{4}  
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Now we create new factor in our dataset to indicate weekday or weekend:
 
-```{r weekend, cache=FALSE}
+
+```r
 # function to discriminate
 is_we<-function(x) { if (weekdays(as.Date(x))=="Saturday" || weekdays(as.Date(x))=="Sunday") as.factor("weekend") else as.factor("weekday") }
 # apply to dataset and create new factor variable
@@ -114,17 +122,18 @@ suppressWarnings(nomiss_data$is_weekend<-sapply(nomiss_data$date, is_we))
 ave_steps_weekend<-tapply(nomiss_data$steps[nomiss_data$is_weekend=="weekend"], nomiss_data$interval[nomiss_data$is_weekend=="weekend"], mean, na.rm=TRUE)
 #average by weekday
 ave_steps_weekday<-tapply(nomiss_data$steps[nomiss_data$is_weekend=="weekday"], nomiss_data$interval[nomiss_data$is_weekend=="weekday"], mean)
-
-
 ```
 
 And plot weekdays and weekend average:
 
-```{r weekend_plot, cache=FALSE}
+
+```r
 par(mfcol=c(2,1))
 plot(as.integer(names(ave_steps_weekend)), ave_steps_weekend, asp=1, type='l', main='weekend', xlab='Interval', ylab='Number of steps')
 
 plot(as.integer(names(ave_steps_weekday)), asp=1, ave_steps_weekday, type='l', main='weekdays', xlab='Interval', ylab='Number of steps')
 ```
+
+![](PA1_template_files/figure-html/weekend_plot-1.png) 
 
 We can see that there is a difference between weekday and weekend activity patterns - we observe greater mid-day activity on weekend.
