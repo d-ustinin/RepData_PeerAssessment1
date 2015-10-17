@@ -136,4 +136,17 @@ plot(as.integer(names(ave_steps_weekday)), asp=1, ave_steps_weekday, type='l', m
 
 ![](PA1_template_files/figure-html/weekend_plot-1.png) 
 
+Draw the same using lattice package:
+
+
+```r
+library(lattice)
+
+data_ave_steps<-data.frame(interval=c(as.integer(names(ave_steps_weekend)), as.integer(names(ave_steps_weekday))) , steps=c(ave_steps_weekend, ave_steps_weekday), wd=c(rep("weekend",length(ave_steps_weekend) ),rep( "weekdays",length(ave_steps_weekday))))
+
+xyplot(steps ~ interval | wd, data=data_ave_steps, layout=c(1,2), panel=function(x, y, ...){ panel.lines(x,y,...)})                     
+```
+
+![](PA1_template_files/figure-html/weekend_lattice-1.png) 
+
 We can see that there is a difference between weekday and weekend activity patterns - we observe greater mid-day activity on weekend.
